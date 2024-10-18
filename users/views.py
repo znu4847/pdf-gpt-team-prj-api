@@ -2,19 +2,22 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.password_validation import validate_password
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.exceptions import NotFound, ParseError, ValidationError
+from rest_framework.exceptions import NotFound, ParseError
+from django.core.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from common import utils
 from .models import User
 from . import serializers
 
-# test
 
-
+# /users/
 class ROOT(APIView):
-
     def get(self, request):
+        """
+        등록된 사용자 목록을 반환합니다
+        """
+
         page = utils.get_page(request)
 
         # get users per page
@@ -29,6 +32,9 @@ class ROOT(APIView):
         )
 
     def post(self, request):
+        """
+        신규 사용자를 등록합니다
+        """
 
         print("POST: /user")
         print(request.data)
@@ -38,7 +44,7 @@ class ROOT(APIView):
         try:
             # check if passwords match
             if password1 != password2:
-                raise ValidationError("Passwords do not match")
+                raise ValidationError(["암호가 일치하지 않습니다."])
 
             # validate user data
             serializer = serializers.PrivateUserSerializer(data=request.data)
@@ -49,9 +55,10 @@ class ROOT(APIView):
             validate_password(password1)
 
         except ValidationError as e:
-            print("POST: /user - validation error")
-            print(e)
-            raise ParseError("validation error")
+            return Response(
+                {"errors": e.messages},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         password = password1
         user = serializer.save()
@@ -65,8 +72,8 @@ class ROOT(APIView):
         )
 
 
+# /users/<int:pk>
 class PK(APIView):
-
     def get_object(self, pk):
         try:
             return User.objects.get(pk=pk)
@@ -74,16 +81,22 @@ class PK(APIView):
             raise NotFound("User does not exist")
 
     def get(self, request, pk):
+        """
+        pk에 해당하는 사용자 정보를 반환합니다
+        """
         user = self.get_object(pk)
         serializer = serializers.PrivateUserSerializer(user)
         return Response(serializer.data)
 
 
+# /users/password
 class Password(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def put(self, request):
+        """
+        로그인한 사용자의 비밀번호를 변경합니다
+        """
 
         user = request.user
         old_password = request.data.get("old_password")
@@ -99,8 +112,12 @@ class Password(APIView):
         return Response(status=204)
 
 
+# /users/login
 class Login(APIView):
     def post(self, request):
+        """
+        지정한 사용자로 로그인합니다
+        """
         username = request.data.get("username")
         password = request.data.get("password")
         if not username or not password:
@@ -128,11 +145,14 @@ class Login(APIView):
         )
 
 
+# /users/logout
 class Logout(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        """
+        로그아웃합니다
+        """
         logout(request)
         return Response(
             {"ok": "bye!"},
@@ -140,11 +160,15 @@ class Logout(APIView):
         )
 
 
+# /users/me
 class Me(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        """
+        록인한 사용자의 정보를 반환합니다
+        """
+
         serializer = serializers.PrivateUserSerializer(request.user)
         return Response(
             serializer.data,
@@ -152,9 +176,13 @@ class Me(APIView):
         )
 
 
+# /users/auth
 class Auth(APIView):
-
     def get(self, request):
+        """
+        요청한 사용자가 인증되었는지 확인합니다
+        """
+
         user = request.user
         print("GET: auth ")
         print(user)

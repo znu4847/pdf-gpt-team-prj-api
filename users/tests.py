@@ -23,7 +23,6 @@ def create_user(username="test_user", password="test_password"):
 
 
 class RootTestCase(APITestCase):
-
     URL = f"{BASE_URL}/"
 
     def setUp(self):
@@ -51,6 +50,7 @@ class RootTestCase(APITestCase):
                 "email": "test@test.com",
             },
         )
+
         self.assertEqual(
             response.data["username"], "test_user4", "ROOT post_success #3"
         )
@@ -64,23 +64,75 @@ class RootTestCase(APITestCase):
         # check if user was created
         self.assertEqual(User.objects.count(), 4, "ROOT post_success #8")
 
-    # def test_post_fail_password_not_match(self):
-    #     response = self.client.post(
-    #         URL,
-    #         {
-    #             "username": "test_user4",
-    #             "password1": "test_password",
-    #             "password2": "test_password2",
-    #             "name": "Test User 4",
-    #             "email": "test@test.com",
-    #         },
-    #     )
+    def test_post_fail_registed_user(self):
+        response = self.client.post(
+            self.URL,
+            {
+                "username": "test_user3",
+                "password1": "test_password",
+                "password2": "test_password",
+                "name": "Test User 3",
+                "email": "test@test.com",
+            },
+        )
+        self.assertEqual(response.status_code, 400, "ROOT post_fail_registed_user #1")
 
-    #     pass
+    def test_post_fail_password_not_match(self):
+        response = self.client.post(
+            self.URL,
+            {
+                "username": "test_user4",
+                "password1": "test_password",
+                "password2": "test_password2",
+                "name": "Test User 4",
+                "email": "test@test.com",
+            },
+        )
+        self.assertEqual(
+            response.status_code, 400, "ROOT post_fail_password_not_match #1"
+        )
+
+    def test_post_fail_invalid_password(self):
+        form = {
+            "username": "test_user4",
+            "name": "Test User 4",
+            "email": "test@test.com",
+        }
+        form["password1"] = "1234"
+        form["password2"] = "1234"
+        response = self.client.post(
+            self.URL,
+            form,
+        )
+        self.assertEqual(
+            response.status_code, 400, "ROOT post_fail_password_not_match #1"
+        )
+        print(response.data["errors"])
+
+        form["password1"] = "11111111111111111111"
+        form["password2"] = "11111111111111111111"
+        response = self.client.post(
+            self.URL,
+            form,
+        )
+        self.assertEqual(
+            response.status_code, 400, "ROOT post_fail_password_not_match #2"
+        )
+        print(response.data["errors"])
+
+        form["password1"] = "password"
+        form["password2"] = "password"
+        response = self.client.post(
+            self.URL,
+            form,
+        )
+        self.assertEqual(
+            response.status_code, 400, "ROOT post_fail_password_not_match #2"
+        )
+        print(response.data["errors"])
 
 
 class AuthTestCase(APITestCase):
-
     URL = f"{BASE_URL}/auth"
 
     def setUp(self):
