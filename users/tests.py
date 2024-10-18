@@ -5,6 +5,8 @@ from users.models import User
 
 BASE_URL = "/api/v1/users"
 
+
+# test users
 test_users = [
     "test_user1",
     "test_user2",
