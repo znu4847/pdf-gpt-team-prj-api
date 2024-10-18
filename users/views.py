@@ -1,10 +1,12 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.password_validation import validate_password
+from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import NotFound, ParseError, ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+import jwt
 from common import utils
 from .models import User
 from . import serializers
@@ -118,12 +120,19 @@ class Login(APIView):
                 {"error": "username or password is incorrect"},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
-
+        token = jwt.encode(
+            {
+                "pk": user.pk,
+                "username": username,
+            },
+            settings.SECRET_KEY,
+            algorithm="HS256",
+        )
         login(request, user)
         print("POST: login - success ")
         print(user)
         return Response(
-            {"ok": "Welcome!"},
+            {"jwt": token},
             status=status.HTTP_200_OK,
         )
 
