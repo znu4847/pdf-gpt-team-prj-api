@@ -38,8 +38,6 @@ class ROOT(APIView):
         신규 사용자를 등록합니다
         """
 
-        print("POST: /user")
-        print(request.data)
         password1 = request.data.get("password1")
         password2 = request.data.get("password2")
 
@@ -67,9 +65,18 @@ class ROOT(APIView):
         # set password by calling set_password method for hashing it
         user.set_password(password)
         user.save()
+        token = jwt.encode(
+            {
+                "pk": user.pk,
+                "username": user.username,
+            },
+            settings.SECRET_KEY,
+            algorithm="HS256",
+        )
+
         serializer = serializers.PrivateUserSerializer(user)
         return Response(
-            serializer.data,
+            serializer.data | {"jwt": token},
             status=status.HTTP_201_CREATED,
         )
 
@@ -123,7 +130,7 @@ class Login(APIView):
         username = request.data.get("username")
         password = request.data.get("password")
         if not username or not password:
-            raise Response(
+            return Response(
                 {"error": "username and password are required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -146,8 +153,6 @@ class Login(APIView):
             algorithm="HS256",
         )
         login(request, user)
-        print("POST: login - success ")
-        print(user)
         return Response(
             {"jwt": token},
             status=status.HTTP_200_OK,
@@ -193,14 +198,13 @@ class Auth(APIView):
         """
 
         user = request.user
-        print("GET: auth ")
-        print(user)
 
         if not user or user.is_anonymous:
             return Response(
-                {"error": "user is not authenticated"},
+                {"errors": ["user is not authenticated"]},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
+
         return Response(
             {"ok": "Welcome!"},
             status=status.HTTP_200_OK,

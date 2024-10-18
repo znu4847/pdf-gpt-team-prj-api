@@ -132,18 +132,84 @@ class RootTestCase(APITestCase):
         print(response.data["errors"])
 
 
-class AuthTestCase(APITestCase):
-    URL = f"{BASE_URL}/auth"
+class LoginTestCase(APITestCase):
+    URL = f"{BASE_URL}/login"
 
     def setUp(self):
         create_user("test_user", "test_password")
 
-    def test_get(self):
-        self.client.login(username="test_user", password="test_password")
-        response = self.client.get(self.URL)
-        self.assertEqual(response.status_code, 200, "AUTH get_success #1")
+    def test_post_success(self):
+        response = self.client.post(
+            self.URL,
+            {
+                "username": "test_user",
+                "password": "test_password",
+            },
+        )
+        self.assertEqual(response.status_code, 200, "LOGIN post_success #1")
+        self.assertIsNotNone(response.data.get("jwt"), "LOGIN post_success #2")
 
-    def test_get_fail(self):
-        self.client.logout()
-        response = self.client.get(self.URL)
-        self.assertEqual(response.status_code, 401, "AUTH get_fail #1")
+        # set jwt token to request header and test auth
+        self.client.credentials(HTTP_JWT=response.data["jwt"])
+        response = self.client.get(f"{BASE_URL}/auth")
+        self.assertEqual(response.status_code, 200, "LOGIN post_success #3")
+
+    def test_post_fail(self):
+        response = self.client.post(
+            self.URL,
+            {
+                "username": "test_user",
+                "password": "test_password2",
+            },
+        )
+        self.assertEqual(response.status_code, 401, "LOGIN post_fail #1")
+
+        response = self.client.post(
+            self.URL,
+            {
+                "username": "test_user2",
+                "password": "test_password",
+            },
+        )
+        self.assertEqual(response.status_code, 401, "LOGIN post_fail #2")
+
+        response = self.client.post(
+            self.URL,
+            {
+                "username": "test_user2",
+                "password": "test_password2",
+            },
+        )
+        self.assertEqual(response.status_code, 401, "LOGIN post_fail #3")
+
+
+class LogoutTestCase(APITestCase):
+    URL = f"{BASE_URL}/logout"
+
+    def setUp(self):
+        create_user("test_user", "test_password")
+
+    def test_post_issue(self):
+        response = self.client.post(
+            f"{BASE_URL}/login",
+            {
+                "username": "test_user",
+                "password": "test_password",
+            },
+        )
+        self.assertEqual(response.status_code, 200, "LOGOUT post_success #1")
+        self.assertIsNotNone(response.data.get("jwt"), "LOGOUT post_success #2")
+
+        # set jwt token to request header and test auth
+        jwt = response.data["jwt"]
+        self.client.credentials(HTTP_JWT=jwt)
+        response = self.client.get(f"{BASE_URL}/auth")
+        self.assertEqual(response.status_code, 200, "LOGOUT post_success #3")
+
+        response = self.client.post(self.URL)
+        self.assertEqual(response.status_code, 200, "LOGOUT post_success #4")
+
+        # JWT에서는 로그아웃이 불가능합니다
+        response = self.client.get(f"{BASE_URL}/auth")
+        self.assertEqual(response.status_code, 200, "LOGOUT post_success #5")
+        # self.assertEqual(response.status_code, 401, "LOGOUT post_success #5")
