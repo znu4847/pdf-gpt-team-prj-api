@@ -1,7 +1,8 @@
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.password_validation import validate_password
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.exceptions import NotFound, ParseError
+from rest_framework.exceptions import NotFound, ParseError, ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from common import utils
@@ -20,7 +21,10 @@ class ROOT(APIView):
             users,
             many=True,
         )
-        return Response(serializer.data)
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK,
+        )
 
     def post(self, request):
 
@@ -28,20 +32,26 @@ class ROOT(APIView):
         print(request.data)
         password1 = request.data.get("password1")
         password2 = request.data.get("password2")
-        if password1 != password2:
-            return Response(
-                {"error": "Passwords do not match"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+
+        try:
+            # check if passwords match
+            if password1 != password2:
+                raise ValidationError("Passwords do not match")
+
+            # validate user data
+            serializer = serializers.PrivateUserSerializer(data=request.data)
+            if not serializer.is_valid():
+                raise ValidationError(serializer.errors)
+
+            # validate password
+            validate_password(password1)
+
+        except ValidationError as e:
+            print("POST: /user - validation error")
+            print(e)
+            raise ParseError("validation error")
+
         password = password1
-
-        serializer = serializers.PrivateUserSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(
-                serializer.errors,
-                status=status.HTTP_409_CONFLICT,
-            )
-
         user = serializer.save()
         # set password by calling set_password method for hashing it
         user.set_password(password)
@@ -92,17 +102,28 @@ class Login(APIView):
         username = request.data.get("username")
         password = request.data.get("password")
         if not username or not password:
-            raise ParseError
+            raise Response(
+                {"error": "username and password are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         user = authenticate(
             request,
             username=username,
             password=password,
         )
         if not user:
-            return Response({"error": "wrong password"})
+            return Response(
+                {"error": "username or password is incorrect"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         login(request, user)
-        return Response({"ok": "Welcome!"})
+        print("POST: login - success ")
+        print(user)
+        return Response(
+            {"ok": "Welcome!"},
+            status=status.HTTP_200_OK,
+        )
 
 
 class Logout(APIView):
@@ -111,7 +132,10 @@ class Logout(APIView):
 
     def post(self, request):
         logout(request)
-        return Response({"ok": "bye!"})
+        return Response(
+            {"ok": "bye!"},
+            status=status.HTTP_200_OK,
+        )
 
 
 class Me(APIView):
@@ -120,4 +144,25 @@ class Me(APIView):
 
     def get(self, request):
         serializer = serializers.PrivateUserSerializer(request.user)
-        return Response(serializer.data)
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK,
+        )
+
+
+class Auth(APIView):
+
+    def get(self, request):
+        user = request.user
+        print("GET: auth ")
+        print(user)
+
+        if not user or user.is_anonymous:
+            return Response(
+                {"error": "user is not authenticated"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        return Response(
+            {"ok": "Welcome!"},
+            status=status.HTTP_200_OK,
+        )
