@@ -14,6 +14,7 @@ test_users = [
 ]
 
 
+# create test users
 def create_user(username="test_user", password="test_password"):
     return User.objects.create_user(
         username=username,
