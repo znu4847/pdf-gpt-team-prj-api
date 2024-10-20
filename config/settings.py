@@ -31,6 +31,8 @@ ALLOWED_HOSTS = []
 # Application definition
 CUSTOM_APPS = [
     "users.apps.UsersConfig",
+    "chat.conversations.apps.ConversationsConfig",
+    "chat.messages.apps.MessagesConfig",
 ]
 
 SYSTEM_APPS = [
