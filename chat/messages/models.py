@@ -20,8 +20,8 @@ class Message(CommonModel):
         choices=MessageTypeChoices.choices,
         default=MessageTypeChoices.HUMAN_MESSAGE,
     )
-    message = models.TextField()
+    text = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user} - {self.conversation}"
+        return f"{self.text}"

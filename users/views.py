@@ -1,14 +1,14 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.password_validation import validate_password
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import NotFound, ParseError
-from django.core.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 import jwt
-from common import utils
+from utils import page_utils
 from .models import User
 from . import serializers
 
@@ -20,10 +20,10 @@ class ROOT(APIView):
         등록된 사용자 목록을 반환합니다
         """
 
-        page = utils.get_page(request)
+        page = page_utils.get_page(request)
 
         # get users per page
-        users = utils.get_page_items(page, User.objects.all())
+        users = page_utils.get_page_items(page, User.objects.all())
         serializer = serializers.TinyUserSerializer(
             users,
             many=True,

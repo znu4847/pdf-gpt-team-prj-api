@@ -10,14 +10,14 @@ class Conversation(CommonModel):
         on_delete=models.CASCADE,
         related_name="conversations",
     )
-    name = models.CharField(
+    title = models.CharField(
         max_length=150,
         default="",
     )
     pdf_url = models.URLField(blank=True)
     last_message = models.ForeignKey(
         "chat_messages.Message",
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name="last_message_conversation",
         null=True,
         blank=True,
