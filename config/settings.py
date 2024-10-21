@@ -31,11 +31,13 @@ ALLOWED_HOSTS = []
 # Application definition
 CUSTOM_APPS = [
     "users.apps.UsersConfig",
+    "chat",
     "chat.conversations.apps.ConversationsConfig",
     "chat.messages.apps.MessagesConfig",
 ]
 
 SYSTEM_APPS = [
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -141,4 +143,12 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
         "config.authentication.JWTAuthentication",
     ]
+}
+
+ASGI_APPLICATION = "config.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
 }
