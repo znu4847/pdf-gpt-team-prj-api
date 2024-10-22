@@ -6,11 +6,8 @@ class ListSerializer(ModelSerializer):
     class Meta:
         model = Message
         fields = [
-            "pk",
-            "conversation",
-            "type",
+            "role",
             "text",
-            "timestamp",
         ]
 
 
@@ -19,6 +16,6 @@ class CreateSerializer(ModelSerializer):
         model = Message
         fields = [
             "conversation",
-            "type",
+            "role",
             "text",
         ]

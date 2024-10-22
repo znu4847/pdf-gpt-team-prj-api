@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.core.exceptions import PermissionDenied
 from . import serializers as msg_srlz
+from .models import Message
 from chat.conversations.models import Conversation
 
 # Create your views here.
@@ -14,19 +15,34 @@ class ROOT(APIView):
         로그인한 사용자의 지정한 대화의 메시지 목록을 반환합니다
         """
 
-        user = request.user
-        if not user or user.is_anonymous:
-            return Response(
-                {"message": "로그인이 필요합니다."},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
+        # user = request.user
+        # if not user or user.is_anonymous:
+        #     return Response(
+        #         {"message": "로그인이 필요합니다."},
+        #         status=status.HTTP_401_UNAUTHORIZED,
+        #     )
 
         conv_pk = request.query_params.get("conversation")
         print(conv_pk)
 
+        if not conv_pk:
+            return Response(
+                {"message": "대화를 지정해주세요."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # messages = msg_srlz.ListSerializer(
+        #     Conversation.objects.get(pk=conv_pk).messages.all(),
+        #     many=True,
+        # )
+        messages = Message.objects.filter(conversation=conv_pk)
+        print(messages)
+
         return Response(
-            {"data": []},
-            status=status.HTTP_200_OK,
+            msg_srlz.ListSerializer(
+                messages,
+                many=True,
+            ).data
         )
 
     def post(self, request):
@@ -41,6 +57,9 @@ class ROOT(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
+        print("----- message post -----")
+        print(user.pk)
+        print(request.data.get("user"))
         if not str(user.pk) == request.data.get("user"):
             raise PermissionDenied("사용자 정보가 일치하지 않습니다.")
 

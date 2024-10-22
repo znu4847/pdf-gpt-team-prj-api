@@ -14,7 +14,8 @@ class Conversation(CommonModel):
         max_length=150,
         default="",
     )
-    pdf_url = models.URLField(blank=True)
+    pdf_url = models.TextField(blank=True)
+    embed_url = models.TextField(blank=True)
     last_message = models.ForeignKey(
         "chat_messages.Message",
         on_delete=models.SET_NULL,

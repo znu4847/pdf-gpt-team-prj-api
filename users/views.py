@@ -154,7 +154,11 @@ class Login(APIView):
         )
         login(request, user)
         return Response(
-            {"jwt": token},
+            {
+                "pk": user.pk,
+                "username": user.username,
+                "jwt": token,
+            },
             status=status.HTTP_200_OK,
         )
 

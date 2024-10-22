@@ -8,6 +8,8 @@ class ListSerializer(ModelSerializer):
         fields = [
             "pk",
             "title",
+            "pdf_url",
+            "embed_url",
             "last_message",
         ]
 
@@ -22,9 +24,11 @@ class CreateSerializer(ModelSerializer):
     class Meta:
         model = Conversation
         fields = [
+            "pk",
             "user",
             "title",
             "pdf_url",
+            "embed_url",
         ]
 
     def validate_name(self, value):

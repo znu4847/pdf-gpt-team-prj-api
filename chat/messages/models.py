@@ -15,7 +15,7 @@ class Message(CommonModel):
         on_delete=models.CASCADE,
         related_name="messages",
     )
-    type = models.CharField(
+    role = models.CharField(
         max_length=20,
         choices=RoleChoices.choices,
         default=RoleChoices.HUMAN,

@@ -39,7 +39,12 @@ class ROOT(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        if user.pk != request.data.get("user"):
+        print("----- conversation post -----")
+        print(user.pk)
+        print(request.data.get("user"))
+        print(request.data.get("pdf_url"))
+
+        if not str(user.pk) == request.data.get("user"):
             raise PermissionDenied("사용자 정보가 일치하지 않습니다.")
 
         serializer = conv_srlz.CreateSerializer(data=request.data)
