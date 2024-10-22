@@ -15,12 +15,12 @@ class ROOT(APIView):
         로그인한 사용자의 지정한 대화의 메시지 목록을 반환합니다
         """
 
-        # user = request.user
-        # if not user or user.is_anonymous:
-        #     return Response(
-        #         {"message": "로그인이 필요합니다."},
-        #         status=status.HTTP_401_UNAUTHORIZED,
-        #     )
+        user = request.user
+        if not user or user.is_anonymous:
+            return Response(
+                {"message": "로그인이 필요합니다."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         conv_pk = request.query_params.get("conversation")
 
@@ -30,10 +30,6 @@ class ROOT(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # messages = msg_srlz.ListSerializer(
-        #     Conversation.objects.get(pk=conv_pk).messages.all(),
-        #     many=True,
-        # )
         messages = Message.objects.filter(conversation=conv_pk)
 
         return Response(
@@ -55,7 +51,7 @@ class ROOT(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        if not str(user.pk) == request.data.get("user"):
+        if not str(user.pk) == str(request.data.get("user")):
             raise PermissionDenied("사용자 정보가 일치하지 않습니다.")
 
         conversation = Conversation.objects.get(pk=request.data.get("conversation"))
