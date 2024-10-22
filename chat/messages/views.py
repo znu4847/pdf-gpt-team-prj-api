@@ -23,7 +23,6 @@ class ROOT(APIView):
         #     )
 
         conv_pk = request.query_params.get("conversation")
-        print(conv_pk)
 
         if not conv_pk:
             return Response(
@@ -36,7 +35,6 @@ class ROOT(APIView):
         #     many=True,
         # )
         messages = Message.objects.filter(conversation=conv_pk)
-        print(messages)
 
         return Response(
             msg_srlz.ListSerializer(
@@ -57,9 +55,6 @@ class ROOT(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        print("----- message post -----")
-        print(user.pk)
-        print(request.data.get("user"))
         if not str(user.pk) == request.data.get("user"):
             raise PermissionDenied("사용자 정보가 일치하지 않습니다.")
 
