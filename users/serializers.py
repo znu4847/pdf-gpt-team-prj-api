@@ -26,6 +26,9 @@ class PrivateUserSerializer(ModelSerializer):
             "last_name",
             "user_permissions",
             "groups",
+            "llm_type",
+            "openai_key",
+            "claude_key",
         ]
 
     def validate_username(self, value):
@@ -36,7 +39,6 @@ class PrivateUserSerializer(ModelSerializer):
 
 
 class UserPasswordSerializer(ModelSerializer):
-
     class Meta:
         model = User
         fields = [
@@ -47,3 +49,39 @@ class UserPasswordSerializer(ModelSerializer):
         if len(value) < 8:
             raise ValidationError("Password is too short")
         return value
+
+
+class LLMKeySerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "openai_key",
+            "claude_key",
+            "llm_type",
+        ]
+
+    def validate_llm_type(self, value):
+        if value not in User.LLMChoices.values:
+            raise ValidationError("Invalid LLM type")
+
+        if value == User.LLMChoices.OPEN_AI and not self.initial_data.get("openai_key"):
+            raise ValidationError("OpenAI key is required")
+
+        elif value == User.LLMChoices.CLAUDE and not self.initial_data.get(
+            "claude_key"
+        ):
+            raise ValidationError("Claude key is required")
+
+        return value
+
+
+class LoginResposneSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "pk",
+            "username",
+            "llm_type",
+            "openai_key",
+            "claude_key",
+        ]

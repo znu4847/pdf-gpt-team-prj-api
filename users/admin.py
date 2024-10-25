@@ -7,7 +7,6 @@ from .models import User
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
-
     fieldsets = (
         (
             "Profile",
@@ -16,6 +15,9 @@ class CustomUserAdmin(UserAdmin):
                     "username",
                     "name",
                     "email",
+                    "llm_type",
+                    "openai_key",
+                    "claude_key",
                 ),
                 "classes": ("wide",),
             },
@@ -39,6 +41,9 @@ class CustomUserAdmin(UserAdmin):
         "username",
         "email",
         "name",
+        "llm_type",
+        "openai_key",
+        "claude_key",
     )
 
     add_fieldsets = (

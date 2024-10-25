@@ -213,3 +213,56 @@ class Auth(APIView):
             {"ok": "Welcome!"},
             status=status.HTTP_200_OK,
         )
+
+
+class LLMKey(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, pk):
+        try:
+            return User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            raise NotFound("User does not exist")
+
+    def get(self, request, pk):
+        """
+        사용자의 API 키를 반환합니다
+        """
+        user = self.get_object(pk)
+        return Response(
+            serializers.LLMKeySerializer(user).data,
+            status=status.HTTP_200_OK,
+        )
+
+    def put(self, request, pk):
+        """
+        사용자의 API 키를 갱신합니다
+        """
+        user = request.user
+
+        if not user or user.is_anonymous:
+            return Response(
+                {"errors": ["user is not authenticated"]},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        user = self.get_object(pk)
+
+        print("PUT LLM KEY request.data")
+        print(request.data)
+        serializer = serializers.LLMKeySerializer(
+            user,
+            data=request.data,
+            partial=True,
+        )
+        if not serializer.is_valid():
+            return Response(
+                {"errors": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        user = serializer.save()
+
+        return Response(
+            serializers.LLMKeySerializer(user).data,
+            status=status.HTTP_200_OK,
+        )
