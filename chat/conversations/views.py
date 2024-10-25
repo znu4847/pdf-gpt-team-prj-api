@@ -10,7 +10,6 @@ from .models import Conversation
 
 
 class ROOT(APIView):
-
     def get(self, request):
         """
         로그인한 사용자의 대화 목록을 반환합니다
@@ -61,7 +60,6 @@ class ROOT(APIView):
 
 
 class ROOTDetail(APIView):
-
     def get_object(self, pk):
         try:
             return Conversation.objects.get(pk=pk)
@@ -79,11 +77,6 @@ class ROOTDetail(APIView):
                 {"message": "로그인이 필요합니다."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
-
-        print("----- conversation put -----")
-        print(user.pk)
-        print(request.data.get("user"))
-        print(request.data.get("pdf_url"))
 
         conversation = self.get_object(pk)
         if not user.pk == conversation.user.pk:
@@ -103,4 +96,27 @@ class ROOTDetail(APIView):
         return Response(
             serializer.data,
             status=status.HTTP_201_CREATED,
+        )
+
+    def delete(self, request, pk):
+        """
+        대화를 삭제합니다
+        """
+
+        user = request.user
+        if not user or user.is_anonymous:
+            return Response(
+                {"message": "로그인이 필요합니다."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        conversation = self.get_object(pk)
+        if not user.pk == conversation.user.pk:
+            raise PermissionDenied("사용자 정보가 일치하지 않습니다.")
+
+        conversation.delete()
+
+        return Response(
+            {"message": "대화가 삭제되었습니다."},
+            status=status.HTTP_200_OK,
         )
