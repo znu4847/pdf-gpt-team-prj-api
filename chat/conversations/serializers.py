@@ -11,6 +11,8 @@ class ListSerializer(ModelSerializer):
             "pdf_url",
             "embed_url",
             "last_message",
+            "tokens",
+            "charges",
         ]
 
 
@@ -29,6 +31,8 @@ class CreateSerializer(ModelSerializer):
             "title",
             "pdf_url",
             "embed_url",
+            "tokens",
+            "charges",
         ]
 
     def validate_name(self, value):
@@ -36,3 +40,19 @@ class CreateSerializer(ModelSerializer):
 
     def validate(self, data):
         return data
+
+
+class TokenSerializer(ModelSerializer):
+    class Meta:
+        model = Conversation
+        fields = [
+            "pk",
+            "tokens",
+            "charges",
+        ]
+
+    # def validate_name(self, value):
+    #     return value
+
+    # def validate(self, data):
+    #     return data

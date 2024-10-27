@@ -265,3 +265,23 @@ class LLMKey(APIView):
             serializers.LLMKeySerializer(user).data,
             status=status.HTTP_200_OK,
         )
+
+
+class Stats(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, pk):
+        try:
+            return User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            raise NotFound("User does not exist")
+
+    def get(self, request, pk):
+        """
+        사용자의 API 키를 반환합니다
+        """
+        user = self.get_object(pk)
+        return Response(
+            serializers.LLMKeySerializer(user).data,
+            status=status.HTTP_200_OK,
+        )

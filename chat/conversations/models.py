@@ -23,6 +23,8 @@ class Conversation(CommonModel):
         null=True,
         blank=True,
     )
+    tokens = models.IntegerField(default=0)
+    charges = models.FloatField(default=0.0)
 
     def __str__(self):
         return f"{self.pk}"

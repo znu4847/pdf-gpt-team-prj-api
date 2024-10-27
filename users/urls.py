@@ -11,4 +11,5 @@ urlpatterns = [
     path("logout", views.Logout.as_view()),
     path("<int:pk>", views.PK.as_view()),
     path("llm-key/<int:pk>", views.LLMKey.as_view()),
+    path("stats/<int:pk>", views.Stats.as_view()),
 ]
