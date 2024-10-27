@@ -42,8 +42,8 @@ class CustomUserAdmin(UserAdmin):
         "email",
         "name",
         "llm_type",
-        "openai_key",
-        "claude_key",
+        "is_openai_key_registed",
+        "is_claude_key_registed",
     )
 
     add_fieldsets = (

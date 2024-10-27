@@ -134,6 +134,7 @@ class Login(APIView):
                 {"error": "username and password are required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
         user = authenticate(
             request,
             username=username,
@@ -248,8 +249,6 @@ class LLMKey(APIView):
 
         user = self.get_object(pk)
 
-        print("PUT LLM KEY request.data")
-        print(request.data)
         serializer = serializers.LLMKeySerializer(
             user,
             data=request.data,

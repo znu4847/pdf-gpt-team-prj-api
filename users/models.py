@@ -25,3 +25,9 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+
+    def is_openai_key_registed(self):
+        return "Yes" if self.openai_key != "" else "No"
+
+    def is_claude_key_registed(self):
+        return "Yes" if self.claude_key != "" else "No"
