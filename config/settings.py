@@ -41,12 +41,14 @@ if RENDER_EXTERNAL_HOSTNAME:
 
 # Application definition
 CUSTOM_APPS = [
+    "chat",
     "users.apps.UsersConfig",
     "chat.conversations.apps.ConversationsConfig",
     "chat.messages.apps.MessagesConfig",
 ]
 
 SYSTEM_APPS = [
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -170,3 +172,6 @@ REST_FRAMEWORK = {
         "config.authentication.JWTAuthentication",
     ]
 }
+
+# Daphne
+ASGI_APPLICATION = "config.asgi.application"
