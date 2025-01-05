@@ -1,8 +1,42 @@
 import json
 import random
+import time
 
 from channels.generic.websocket import WebsocketConsumer
-import time
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_openai import ChatOpenAI
+from . import prompts
+
+
+class ChatConsumer(WebsocketConsumer):
+    def connect(self):
+        print("connect")
+        self.accept()
+
+    def disconnect(self, close_code):
+        pass
+
+    def receive(self, text_data):
+        text_data_json = json.loads(text_data)
+        message = text_data_json["message"]
+        print("receive:", message)
+        dev = True
+        if dev:
+            self.send(
+                text_data=json.dumps({"message": message + "_re", "pending": False})
+            )
+            return
+        messages = [
+            SystemMessage("Translate the following from English into Italian"),
+            HumanMessage(message),
+        ]
+        model = ChatOpenAI(model="gpt-4o-mini")
+
+        prompt = prompts.SimpleChat(model)
+        result = prompt.chat(messages)
+        print("result:", result.content)
+        self.send(text_data=json.dumps({"message": result.content, "pending": False}))
+
 
 dummy_messages = [
     """
@@ -52,7 +86,7 @@ dummy_messages = [
 ]
 
 
-class ChatConsumer(WebsocketConsumer):
+class DummyConsumer(WebsocketConsumer):
     def connect(self):
         print("connect")
         self.accept()

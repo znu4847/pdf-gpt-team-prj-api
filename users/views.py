@@ -280,6 +280,8 @@ class Stats(APIView):
         """
         사용자의 API 키를 반환합니다
         """
+        print("users/stats")
+        print(pk)
         user = self.get_object(pk)
         return Response(
             serializers.LLMKeySerializer(user).data,
